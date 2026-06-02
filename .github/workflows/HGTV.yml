@@ -1,0 +1,38 @@
+name: Stream_Pro_TV_Style_175
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' 
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  run-stream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Live Now
+        env:
+          STREAM_KEY: ${{ secrets.TWITCH_KEY_5 }}
+        run: |
+          SOURCE="https://sgchill.duckdns.org/tiktok_video_2.mp4"
+          
+          while true; do
+            echo "========== Phát lại (Mã hóa nhanh) =========="
+            
+            # Thay -c copy bằng -c:v libx264 -preset ultrafast
+            ffmpeg -y -re -stream_loop -1 \
+              -i "$SOURCE" \
+              -c:v libx264 -preset ultrafast -b:v 2500k \
+              -c:a aac -b:a 128k \
+              -f flv "rtmp://live.twitch.tv/app/$STREAM_KEY"
+            
+            sleep 5
+          done
